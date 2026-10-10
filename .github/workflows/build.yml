@@ -2,7 +2,10 @@ name: Build
 
 # Builds the whole game, the way re:Blue's CI does: the three files the build
 # needs from the disc (default.xex and the two shader templates) come from the
-# private shipa-2/xerenge-assets repository, read with the ASSETS_TOKEN secret.
+# private assets repository (the ASSETS_REPO variable, default
+# shipa-2/xerenge-assets), read with the ASSETS_TOKEN secret. A fork makes its
+# own: game/default.xex, game/graphics/lion.obj and game/graphics/lionblend.obj
+# from the player's disc (see SETUP.md, "CI on a fork").
 # What is kept is the compiled game and the installer that installs it - never
 # the disc files, generated/ or the translated shader sources.
 #
@@ -65,12 +68,13 @@ jobs:
       - name: Fetch the build inputs (private)
         env:
           ASSETS_TOKEN: ${{ secrets.ASSETS_TOKEN }}
+          ASSETS_REPO: ${{ vars.ASSETS_REPO || 'shipa-2/xerenge-assets' }}
         run: |
           if [ -z "$ASSETS_TOKEN" ]; then
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
-          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/shipa-2/xerenge-assets.git" "$RUNNER_TEMP/assets"
-          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/shipa-2/xerenge-assets.git
+          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la "$RUNNER_TEMP/assets/game" "$RUNNER_TEMP/assets/game/graphics"
 
       # The SDK, plume and XenosRecomp are separate forks that rarely change
@@ -186,12 +190,13 @@ jobs:
       - name: Fetch the build inputs (private)
         env:
           ASSETS_TOKEN: ${{ secrets.ASSETS_TOKEN }}
+          ASSETS_REPO: ${{ vars.ASSETS_REPO || 'shipa-2/xerenge-assets' }}
         run: |
           if [ -z "$ASSETS_TOKEN" ]; then
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
-          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/shipa-2/xerenge-assets.git" ../xerenge-assets
-          git -C ../xerenge-assets remote set-url origin https://github.com/shipa-2/xerenge-assets.git
+          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" ../xerenge-assets
+          git -C ../xerenge-assets remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la ../xerenge-assets/game ../xerenge-assets/game/graphics
 
       # See the matching step in linux-amd64 for why: an unchanged fork
@@ -322,12 +327,13 @@ jobs:
       - name: Fetch the build inputs (private)
         env:
           ASSETS_TOKEN: ${{ secrets.ASSETS_TOKEN }}
+          ASSETS_REPO: ${{ vars.ASSETS_REPO || 'shipa-2/xerenge-assets' }}
         run: |
           if [ -z "$ASSETS_TOKEN" ]; then
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
-          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/shipa-2/xerenge-assets.git" "$RUNNER_TEMP/assets"
-          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/shipa-2/xerenge-assets.git
+          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
 
       # See the matching step in linux-amd64 for why: an unchanged fork
       # restores from cache instead of a full clone and rebuild.
@@ -427,12 +433,13 @@ jobs:
       - name: Fetch the build inputs (private)
         env:
           ASSETS_TOKEN: ${{ secrets.ASSETS_TOKEN }}
+          ASSETS_REPO: ${{ vars.ASSETS_REPO || 'shipa-2/xerenge-assets' }}
         run: |
           if [ -z "$ASSETS_TOKEN" ]; then
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
-          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/shipa-2/xerenge-assets.git" "$RUNNER_TEMP/assets"
-          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/shipa-2/xerenge-assets.git
+          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la "$RUNNER_TEMP/assets/game" "$RUNNER_TEMP/assets/game/graphics"
 
       # See the matching step in linux-amd64 for why: an unchanged fork
@@ -529,12 +536,13 @@ jobs:
       - name: Fetch the build inputs (private)
         env:
           ASSETS_TOKEN: ${{ secrets.ASSETS_TOKEN }}
+          ASSETS_REPO: ${{ vars.ASSETS_REPO || 'shipa-2/xerenge-assets' }}
         run: |
           if [ -z "$ASSETS_TOKEN" ]; then
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
-          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/shipa-2/xerenge-assets.git" "$RUNNER_TEMP/assets"
-          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/shipa-2/xerenge-assets.git
+          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la "$RUNNER_TEMP/assets/game" "$RUNNER_TEMP/assets/game/graphics"
 
       # See the matching step in linux-amd64 for why: an unchanged fork
