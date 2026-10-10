@@ -51,5 +51,12 @@
             android:configChanges="layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:preferMinimalPostProcessing="true"
             android:exported="false" />
+
+        <!-- Starts the game over from the in-game menu, from a process of its own. -->
+        <activity android:name="com.xerenge.burnout.RestartActivity"
+            android:process=":restart"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:exported="false" />
     </application>
 </manifest>
