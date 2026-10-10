@@ -16,6 +16,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      only_android:
+        description: Build only the Android APK
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,6 +31,7 @@ concurrency:
 
 jobs:
   linux-amd64:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.only_android) }}
     runs-on: ubuntu-24.04
     env:
       CC: clang
@@ -149,6 +155,7 @@ jobs:
   # The same scripts, run by Git for Windows' bash; scripts/platform.sh picks
   # the win-amd64 preset and the .exe names.
   win-amd64:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.only_android) }}
     runs-on: windows-latest
     defaults:
       run:
@@ -407,6 +414,7 @@ jobs:
   # tools and Qt for the installer, no Vulkan or windowing packages. See
   # macos-x86_64 below for Intel.
   macos-arm64:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.only_android) }}
     # macos-14's default Xcode is 15.x (AppleClang 15); the SDK needs AppleClang
     # 16+ (Xcode 16+) for C++23. macos-15 defaults to a new enough Xcode.
     runs-on: macos-15
@@ -507,6 +515,7 @@ jobs:
   # Apple's, so Homebrew's own LLVM stands in - the same trick linux-amd64
   # uses with its own clang-20 instead of Ubuntu's default.
   macos-x86_64:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.only_android) }}
     runs-on: macos-13
     env:
       CC: clang
@@ -608,6 +617,7 @@ jobs:
   # neither the private build inputs nor the game. One artifact carries the
   # Linux and the Windows build.
   lobby-server:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.only_android) }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
@@ -652,7 +662,7 @@ jobs:
     # hostage to a job none of the other platforms depend on. It still builds
     # on every push; its zip just lands in a later release once it's done.
     needs: [linux-amd64, win-amd64, android-arm64, macos-arm64, lobby-server]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && !(github.event_name == 'workflow_dispatch' && inputs.only_android)
     runs-on: ubuntu-24.04
     permissions:
       contents: write
