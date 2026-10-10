@@ -48,11 +48,18 @@ final class Cheats {
     }
 
     /**
-     * Cheats offered ready-made, as {name, address, size, value}. Only an address
-     * checked against this disc belongs here; the menu's "Add a cheat" takes the
-     * rest.
+     * Cheats offered ready-made, as {name, address, size, value}; only addresses
+     * read out of this disc's default.xex belong here.
+     *
+     * Unlimited boost: the debug start menu's "Infinite Boost" row stores its
+     * choice in the byte at 0x825E80D4 (the store at 0x82202930). The boost
+     * object's constructor (0x820C56F0) copies that byte into its +0xB9 flag, and
+     * the boost update (0x820DA9D8) keeps the meter at its maximum while the
+     * flag is set, whether boosting or not. Held at 1, every race gets it.
      */
-    static final Object[][] CATALOG = {};
+    static final Object[][] CATALOG = {
+        {"Unlimited boost", 0x825E80D4L, 1, 1L},
+    };
 
     final List<Cheat> list = new ArrayList<>();
 
