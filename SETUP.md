@@ -346,6 +346,32 @@ With `--lobby-server` the server is the only lobby: the copies do not start lobb
 is found by every player, and it keeps running when a player quits. Options: `--host`, `--directory-port`,
 `--lobby-port`, `--advertise <the address players should reach it at>`.
 
+## CI on a fork
+
+The GitHub workflow builds the game, so it needs three files from the disc that
+the repository does not carry. It reads them from a private repository of
+yours:
+
+```
+game/default.xex
+game/graphics/lion.obj
+game/graphics/lionblend.obj
+```
+
+Extract them with `scripts/extract-image <disc image> <directory>` and commit
+them to a **private** repository. Then, in the fork's Settings, Secrets and
+variables, Actions:
+
+- Secret `ASSETS_TOKEN`: a fine-grained personal access token with read access
+  (Contents) to that repository.
+- Variable `ASSETS_REPO`: its name, `owner/name` (unset, the workflow reads
+  `shipa-2/xerenge-assets`).
+- Optional secret `ANDROID_KEYSTORE_B64`: a base64 keystore, so the APK is
+  signed with a key that installs over the last one.
+
+Run the Build workflow (Actions, Run workflow); the APK is the
+`burnout-revenge-android-arm64` artifact.
+
 ## When something is wrong
 
 **No window, but sound.** The Vulkan instance came up without a surface. Check
