@@ -19,9 +19,12 @@ import org.libsdl.app.SDLActivity;
  *   user/        saves
  *   xerenge.conf the settings
  *   burnout.log  the log (with .1 and .2 before it)
+ *   cheats.conf, touch_layout.conf  the in-game menu's cheats and button layout
  */
 public class BurnoutActivity extends SDLActivity {
     private Settings settings;
+    private TouchControls controls;
+    private CheatsMenu menu;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -29,6 +32,14 @@ public class BurnoutActivity extends SDLActivity {
         // it starts, the renderer when it creates its Vulkan instance.
         settings = Settings.load(this);
         settings.applyEnvironment();
+        // The cheats the menu saved; the game applies them as it runs.
+        try {
+            File cheats = Cheats.file(this);
+            if (cheats.isFile()) {
+                Os.setenv("XERENGE_CHEATS", cheats.getAbsolutePath(), true);
+            }
+        } catch (Exception ignored) {
+        }
         String driver = getSharedPreferences(InstallerActivity.PREFS, MODE_PRIVATE)
                 .getString(InstallerActivity.PREF_DRIVER, null);
         try {
@@ -41,9 +52,20 @@ public class BurnoutActivity extends SDLActivity {
         } catch (Exception ignored) {
         }
         super.onCreate(state);
-        // The on-screen pad, over SDL's surface.
-        if (settings.touchControls && mLayout != null) {
-            mLayout.addView(new TouchControls(this, settings.touchOpacity),
+        // The on-screen pad, over SDL's surface, with the menu button at its top right
+        // (cheats, layout, restart). Without the pad only that button takes touches.
+        if (mLayout != null) {
+            final boolean pad = settings.touchControls;
+            controls = new TouchControls(this, settings.touchOpacity, pad, () -> menu.show());
+            menu = new CheatsMenu(this, new CheatsMenu.Host() {
+                @Override public void editLayout() {
+                    controls.beginEdit();
+                }
+                @Override public boolean canEditLayout() {
+                    return pad;
+                }
+            });
+            mLayout.addView(controls,
                     new android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT));
         }
