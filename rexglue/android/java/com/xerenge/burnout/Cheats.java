@@ -31,6 +31,8 @@ final class Cheats {
         int size;
         long value;
         boolean enabled;
+        /** More patches the same cheat makes: {address, size, value}. */
+        final List<long[]> extra = new ArrayList<>();
 
         Cheat(String name, long address, int size, long value, boolean enabled) {
             this.name = name;
@@ -40,10 +42,19 @@ final class Cheats {
             this.enabled = enabled;
         }
 
-        String line() {
+        private String line(long a, int n, long v) {
             return (enabled ? "" : "#- ") + name.replace('|', '/').replace('\n', ' ') + " | "
-                    + String.format(Locale.US, "%08X", address) + " | " + size + " | "
-                    + String.format(Locale.US, "%0" + (size * 2) + "X", value);
+                    + String.format(Locale.US, "%08X", a) + " | " + n + " | "
+                    + String.format(Locale.US, "%0" + (n * 2) + "X", v);
+        }
+
+        /** A line per patch. */
+        String lines() {
+            StringBuilder out = new StringBuilder(line(address, size, value));
+            for (long[] patch : extra) {
+                out.append('\n').append(line(patch[0], (int) patch[1], patch[2]));
+            }
+            return out.toString();
         }
     }
 
@@ -59,6 +70,10 @@ final class Cheats {
      */
     static final Object[][] CATALOG = {
         {"Unlimited boost", 0x825E80D4L, 1, 1L},
+        // The debug menu's "Unlock All" (0x82108BF0 -> 0x820FAD48) sets four flag
+        // bytes the progression code reads: every car, event and track open.
+        {"Unlock everything", 0x8281FE78L, 1, 1L,
+            new long[] {0x8281FE79L, 1, 1}, new long[] {0x8281FE7AL, 1, 1}, new long[] {0x8281FF51L, 1, 1}},
     };
 
     final List<Cheat> list = new ArrayList<>();
@@ -70,8 +85,12 @@ final class Cheats {
     static Cheats load(Context context) {
         Cheats cheats = new Cheats();
         for (Object[] entry : CATALOG) {
-            cheats.list.add(new Cheat((String) entry[0], ((Number) entry[1]).longValue(),
-                    ((Number) entry[2]).intValue(), ((Number) entry[3]).longValue(), false));
+            Cheat cheat = new Cheat((String) entry[0], ((Number) entry[1]).longValue(),
+                    ((Number) entry[2]).intValue(), ((Number) entry[3]).longValue(), false);
+            for (int i = 4; i < entry.length; ++i) {
+                cheat.extra.add((long[]) entry[i]);
+            }
+            cheats.list.add(cheat);
         }
         File file = file(context);
         if (!file.isFile()) {
@@ -113,6 +132,12 @@ final class Cheats {
                 known.enabled = cheat.enabled;
                 return;
             }
+            // One of a catalog cheat's other patches: its line carries the same switch.
+            for (long[] patch : known.extra) {
+                if (patch[0] == cheat.address && known.name.equals(cheat.name)) {
+                    return;
+                }
+            }
         }
         list.add(cheat);
     }
@@ -120,7 +145,7 @@ final class Cheats {
     boolean save(Context context) {
         StringBuilder out = new StringBuilder("# Burnout Revenge cheats: name | address | size | value\n");
         for (Cheat cheat : list) {
-            out.append(cheat.line()).append('\n');
+            out.append(cheat.lines()).append('\n');
         }
         File file = file(context);
         file.getParentFile().mkdirs();
