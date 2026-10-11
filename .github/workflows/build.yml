@@ -760,3 +760,59 @@ jobs:
             artifacts/Burnout_Revenge_Installer-macos-arm64.zip \
             artifacts/ealobby-linux-amd64 \
             artifacts/ealobby-win-amd64.exe
+
+  # A manual run with "Build only the Android APK" ticked publishes that APK on
+  # its own: the full release job above waits for every platform.
+  release-android:
+    needs: [android-arm64]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.only_android
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(tr -d '[:space:]' < VERSION)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version is already released"
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/download-artifact@v6
+        if: steps.version.outputs.new == 'true'
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish
+        if: steps.version.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          ls -la artifacts
+          cat > notes.md <<'NOTES'
+          **Android only.** This release carries the Android APK, `Burnout_Revenge-android-arm64.apk` (arm64, a Vulkan 1.1 GPU - Adreno or Mali). Install it, open it and pick your own Burnout Revenge disc image (PAL, see `SETUP.md`); an installed copy is updated by installing over it. The APK is signed by CI: if your installed app was signed with another key, Android will ask you to uninstall it first, and uninstalling deletes the game's files, so back up `Android/data/com.xerenge.burnout/files/` beforehand.
+
+          What is new since 0.4.5:
+          - **In-game menu.** A button at the top right of the screen opens a menu with Cheats, Edit layout and Restart the game.
+          - **Cheats (Europe disc).** Tick cheats, then Save and restart; they are kept in `cheats.conf` and applied by the game every frame.
+            - **Unlimited boost**: the meter stays full, using the game's own developer "Infinite Boost" switch.
+            - **Unlock everything**: sets the flags behind the game's developer "Unlock All" option, to open cars, events and tracks.
+            - **Add a cheat**: your own memory patch, by address (hex), size and value.
+            These two were found by reading the game's code, not by playing through with them, so treat them as experimental and report anything that stays locked or misbehaves. Keep them off while playing online.
+          - **Edit layout.** Drag and resize every on-screen button, the stick and the menu button; Done keeps the layout in `touch_layout.conf`, and Reset puts it back.
+          - **Back and Start** are drawn as the Xbox View and Menu glyphs instead of text.
+          - **CI** can build and publish the Android APK alone (Run workflow, "Build only the Android APK"), and reads its build inputs from a repository set by the `ASSETS_REPO` variable, so a fork can build.
+          NOTES
+          gh release create "v$VERSION" --title "$VERSION (Android)" --latest --target "$GITHUB_SHA" \
+            --notes-file notes.md \
+            artifacts/Burnout_Revenge-android-arm64.apk
