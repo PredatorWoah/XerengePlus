@@ -71,9 +71,14 @@ final class Cheats {
     static final Object[][] CATALOG = {
         {"Unlimited boost", 0x825E80D4L, 1, 1L},
         // The debug menu's "Unlock All" (0x82108BF0 -> 0x820FAD48) sets four flag
-        // bytes the progression code reads: every car, event and track open.
+        // bytes of the profile. +0x400 and +0x401 also make the game skip recording
+        // and saving results, so the native side (cheats.cpp) holds them off while a
+        // result is recorded: everything is open and races still count.
         {"Unlock everything", 0x8281FE78L, 1, 1L,
             new long[] {0x8281FE79L, 1, 1}, new long[] {0x8281FE7AL, 1, 1}, new long[] {0x8281FF51L, 1, 1}},
+        // Not memory: a switch for the hook on the game's result recording
+        // (0x82101090), which makes every result a gold medal.
+        {"Unlimited stars (gold medal every event)", 0xFFFF0002L, 1, 1L},
     };
 
     final List<Cheat> list = new ArrayList<>();
