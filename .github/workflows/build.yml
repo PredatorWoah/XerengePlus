@@ -80,6 +80,12 @@ jobs:
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
           git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          # A flat repository (the three files at its top level) is arranged as game/.
+          if [ ! -f "$RUNNER_TEMP/assets"/game/default.xex ] && [ -f "$RUNNER_TEMP/assets"/default.xex ]; then
+            mkdir -p "$RUNNER_TEMP/assets"/game/graphics
+            mv "$RUNNER_TEMP/assets"/default.xex "$RUNNER_TEMP/assets"/game/
+            mv "$RUNNER_TEMP/assets"/*.obj "$RUNNER_TEMP/assets"/game/graphics/
+          fi
           git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la "$RUNNER_TEMP/assets/game" "$RUNNER_TEMP/assets/game/graphics"
 
@@ -203,6 +209,12 @@ jobs:
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
           git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" ../xerenge-assets
+          # A flat repository (the three files at its top level) is arranged as game/.
+          if [ ! -f ../xerenge-assets/game/default.xex ] && [ -f ../xerenge-assets/default.xex ]; then
+            mkdir -p ../xerenge-assets/game/graphics
+            mv ../xerenge-assets/default.xex ../xerenge-assets/game/
+            mv ../xerenge-assets/*.obj ../xerenge-assets/game/graphics/
+          fi
           git -C ../xerenge-assets remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la ../xerenge-assets/game ../xerenge-assets/game/graphics
 
@@ -340,6 +352,12 @@ jobs:
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
           git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          # A flat repository (the three files at its top level) is arranged as game/.
+          if [ ! -f "$RUNNER_TEMP/assets"/game/default.xex ] && [ -f "$RUNNER_TEMP/assets"/default.xex ]; then
+            mkdir -p "$RUNNER_TEMP/assets"/game/graphics
+            mv "$RUNNER_TEMP/assets"/default.xex "$RUNNER_TEMP/assets"/game/
+            mv "$RUNNER_TEMP/assets"/*.obj "$RUNNER_TEMP/assets"/game/graphics/
+          fi
           git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
 
       # See the matching step in linux-amd64 for why: an unchanged fork
@@ -447,6 +465,12 @@ jobs:
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
           git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          # A flat repository (the three files at its top level) is arranged as game/.
+          if [ ! -f "$RUNNER_TEMP/assets"/game/default.xex ] && [ -f "$RUNNER_TEMP/assets"/default.xex ]; then
+            mkdir -p "$RUNNER_TEMP/assets"/game/graphics
+            mv "$RUNNER_TEMP/assets"/default.xex "$RUNNER_TEMP/assets"/game/
+            mv "$RUNNER_TEMP/assets"/*.obj "$RUNNER_TEMP/assets"/game/graphics/
+          fi
           git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la "$RUNNER_TEMP/assets/game" "$RUNNER_TEMP/assets/game/graphics"
 
@@ -551,6 +575,12 @@ jobs:
             echo "::error::ASSETS_TOKEN is not set"; exit 1
           fi
           git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/${ASSETS_REPO}.git" "$RUNNER_TEMP/assets"
+          # A flat repository (the three files at its top level) is arranged as game/.
+          if [ ! -f "$RUNNER_TEMP/assets"/game/default.xex ] && [ -f "$RUNNER_TEMP/assets"/default.xex ]; then
+            mkdir -p "$RUNNER_TEMP/assets"/game/graphics
+            mv "$RUNNER_TEMP/assets"/default.xex "$RUNNER_TEMP/assets"/game/
+            mv "$RUNNER_TEMP/assets"/*.obj "$RUNNER_TEMP/assets"/game/graphics/
+          fi
           git -C "$RUNNER_TEMP/assets" remote set-url origin https://github.com/${ASSETS_REPO}.git
           ls -la "$RUNNER_TEMP/assets/game" "$RUNNER_TEMP/assets/game/graphics"
 
