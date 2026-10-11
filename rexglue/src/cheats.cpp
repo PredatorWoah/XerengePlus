@@ -14,7 +14,9 @@
 #include <string>
 #include <vector>
 
+#include <rex/hook.h>
 #include <rex/logging.h>
+#include <rex/ppc.h>
 
 #include "cheats.h"
 #include "guest_memory.h"
@@ -26,6 +28,16 @@ struct Patch {
   uint32_t size;
   uint32_t value;
 };
+
+// Addresses from here up are not memory: switches for the hooks below.
+constexpr uint32_t kVirtualBase = 0xFFFF0000u;
+constexpr uint32_t kGoldMedals = 0xFFFF0002u;  // every result recorded as a gold medal
+
+// The profile object (0x8281FA78) and the flag bytes the developer "Unlock All"
+// sets. +0x400 and +0x401 also make the game skip recording and saving a result
+// (CGt... RecordResult, 0x82101090), so while they are set no race counts.
+constexpr uint32_t kProfileFlagRecord = 0x8281FE78u;  // +0x400
+constexpr uint32_t kProfileFlagSave = 0x8281FE79u;    // +0x401
 
 std::vector<Patch> LoadPatches() {
   std::vector<Patch> patches;
@@ -65,13 +77,29 @@ std::vector<Patch> LoadPatches() {
   return patches;
 }
 
+const std::vector<Patch>& Patches() {
+  static const std::vector<Patch> patches = LoadPatches();
+  return patches;
+}
+
+bool Active(uint32_t address) {
+  for (const Patch& patch : Patches()) {
+    if (patch.address == address && patch.value != 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace xerenge {
 
 void ApplyCheats(uint8_t* base) {
-  static const std::vector<Patch> patches = LoadPatches();
-  for (const Patch& patch : patches) {
+  for (const Patch& patch : Patches()) {
+    if (patch.address >= kVirtualBase) {
+      continue;
+    }
     uint8_t* target = GuestPointer(base, patch.address);
     switch (patch.size) {
       case 1:
@@ -90,3 +118,33 @@ void ApplyCheats(uint8_t* base) {
 }
 
 }  // namespace xerenge
+
+extern "C" void __imp__sub_82101090(PPCContext& __restrict, uint8_t*);
+
+// Records the result of a finished event in the profile: r3 the profile, r5 the
+// medal (0 to 3, higher the better), r6 whether to replace a better one. With
+// the developer unlock flags held on, +0x400 and +0x401 make it do nothing and
+// save nothing; they are held off for the call, so the result counts and is
+// saved. Gold medals: the medal is made the best, which is what the stars add up.
+REX_HOOK_RAW(sub_82101090) {
+  static const bool keep = Active(kProfileFlagRecord) || Active(kProfileFlagSave);
+  static const bool gold = Active(kGoldMedals);
+  const uint32_t profile = ctx.r3.u32;
+  uint8_t saved[2] = {0, 0};
+  if (keep && profile != 0) {
+    for (int i = 0; i < 2; ++i) {
+      uint8_t* flag = xerenge::GuestPointer(base, profile + 0x400 + i);
+      saved[i] = *flag;
+      *flag = 0;
+    }
+  }
+  if (gold && ctx.r5.u32 <= 3) {
+    ctx.r5.u64 = 3;
+  }
+  __imp__sub_82101090(ctx, base);
+  if (keep && profile != 0) {
+    for (int i = 0; i < 2; ++i) {
+      *xerenge::GuestPointer(base, profile + 0x400 + i) = saved[i];
+    }
+  }
+}

@@ -802,11 +802,12 @@ jobs:
           cat > notes.md <<'NOTES'
           **Android only.** This release carries the Android APK, `Burnout_Revenge-android-arm64.apk` (arm64, a Vulkan 1.1 GPU - Adreno or Mali). Install it, open it and pick your own Burnout Revenge disc image (PAL, see `SETUP.md`); an installed copy is updated by installing over it. The APK is signed by CI: if your installed app was signed with another key, Android will ask you to uninstall it first, and uninstalling deletes the game's files, so back up `Android/data/com.xerenge.burnout/files/` beforehand.
 
-          What is new since 0.4.5:
+          What is new since 0.4.5 (0.4.6 had the menu and the first two cheats):
           - **In-game menu.** A button at the top right of the screen opens a menu with Cheats, Edit layout and Restart the game.
           - **Cheats (Europe disc).** Tick cheats, then Save and restart; they are kept in `cheats.conf` and applied by the game every frame.
             - **Unlimited boost**: the meter stays full, using the game's own developer "Infinite Boost" switch.
-            - **Unlock everything**: sets the flags behind the game's developer "Unlock All" option, to open cars, events and tracks.
+            - **Unlock everything**: sets the flags behind the game's developer "Unlock All" option, to open cars, events and tracks. Races and stars still count and are saved (an early build lost them; fixed here).
+            - **Unlimited stars**: every finished event is recorded as a gold medal, which is what the stars add up.
             - **Add a cheat**: your own memory patch, by address (hex), size and value.
             These two were found by reading the game's code, not by playing through with them, so treat them as experimental and report anything that stays locked or misbehaves. Keep them off while playing online.
           - **Edit layout.** Drag and resize every on-screen button, the stick and the menu button; Done keeps the layout in `touch_layout.conf`, and Reset puts it back.
