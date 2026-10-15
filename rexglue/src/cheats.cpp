@@ -121,14 +121,12 @@ void ApplyCheats(uint8_t* base) {
 
 extern "C" void __imp__sub_82101090(PPCContext& __restrict, uint8_t*);
 
-// Records the result of a finished event in the profile: r3 the profile, r5 the
-// medal (0 to 3, higher the better), r6 whether to replace a better one. With
+// Records the result of a finished event in the profile: r3 the profile. With
 // the developer unlock flags held on, +0x400 and +0x401 make it do nothing and
 // save nothing; they are held off for the call, so the result counts and is
-// saved. Gold medals: the medal is made the best, which is what the stars add up.
+// saved.
 REX_HOOK_RAW(sub_82101090) {
   static const bool keep = Active(kProfileFlagRecord) || Active(kProfileFlagSave);
-  static const bool gold = Active(kGoldMedals);
   const uint32_t profile = ctx.r3.u32;
   uint8_t saved[2] = {0, 0};
   if (keep && profile != 0) {
@@ -138,13 +136,40 @@ REX_HOOK_RAW(sub_82101090) {
       *flag = 0;
     }
   }
-  if (gold && ctx.r5.u32 <= 3) {
-    ctx.r5.u64 = 3;
-  }
   __imp__sub_82101090(ctx, base);
   if (keep && profile != 0) {
     for (int i = 0; i < 2; ++i) {
       *xerenge::GuestPointer(base, profile + 0x400 + i) = saved[i];
     }
   }
+}
+
+extern "C" void __imp__sub_821004B0(PPCContext& __restrict, uint8_t*);
+
+// Works the profile's progress out again (r3 the profile): which events are done,
+// the stars they add up to, the ranks those open. It runs after a profile loads
+// and after every result. Per event the profile keeps a result byte at +0x1C0
+// (0 undone, up to 3) and a star tier at +0x2D3 (-1 none, 0 to 4: one to five
+// stars) - the events are the ids in the table at +0x4E0, +0x318, counted at
+// +0x2B4. With the cheat on every event is made done with its five stars first.
+REX_HOOK_RAW(sub_821004B0) {
+  static const bool stars = Active(kGoldMedals);
+  const uint32_t profile = ctx.r3.u32;
+  if (stars && profile != 0) {
+    const uint32_t table = xerenge::LoadGuestU32(base, profile + 0x4E0);
+    if (table != 0) {
+      uint32_t count = xerenge::LoadGuestU32(base, table + 0x2B4);
+      if (count > 150) {
+        count = 150;
+      }
+      for (uint32_t i = 0; i < count; ++i) {
+        uint8_t* result = xerenge::GuestPointer(base, profile + 0x1C0 + i);
+        if (*result < 3) {
+          *result = 3;
+        }
+        *xerenge::GuestPointer(base, profile + 0x2D3 + i) = 4;
+      }
+    }
+  }
+  __imp__sub_821004B0(ctx, base);
 }
