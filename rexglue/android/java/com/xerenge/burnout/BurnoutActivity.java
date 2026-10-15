@@ -71,6 +71,13 @@ public class BurnoutActivity extends SDLActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int request, int result, android.content.Intent data) {
+        if (!SaveBackup.onResult(this, request, result, data)) {
+            super.onActivityResult(request, result, data);
+        }
+    }
+
     // Always landscape, either way up: SDL would otherwise allow any
     // orientation for a resizable window, and the game started in portrait.
     @Override
