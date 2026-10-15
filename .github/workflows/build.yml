@@ -413,9 +413,15 @@ jobs:
           if [ -n "$ANDROID_KEYSTORE_B64" ]; then
             mkdir -p "$HOME/.android"
             printf '%s' "$ANDROID_KEYSTORE_B64" | base64 -d > "$HOME/.android/xerenge-debug.keystore"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.only_android }}" = "true" ]; then
+            # A release must keep one signing key, or no build installs over the last.
+            echo "::error::ANDROID_KEYSTORE_B64 is not set: an APK signed with a key of its own would not install over an earlier one (see SETUP.md, CI on a fork)"; exit 1
           else
             echo "::warning::ANDROID_KEYSTORE_B64 is not set: this APK is signed with a key of its own and will not install over an earlier one"
           fi
+          # Android only installs a build over another if its version code is not lower.
+          export VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))
+          export VERSION_NAME=$(tr -d '[:space:]' < VERSION)
           ./scripts/build-android-apk.sh
           mkdir -p "$RUNNER_TEMP/apk"
           cp rexglue/build-android/burnout.apk "$RUNNER_TEMP/apk/Burnout_Revenge-android-arm64.apk"
@@ -800,14 +806,14 @@ jobs:
         run: |
           ls -la artifacts
           cat > notes.md <<'NOTES'
-          **Android only.** This release carries the Android APK, `Burnout_Revenge-android-arm64.apk` (arm64, a Vulkan 1.1 GPU - Adreno or Mali). Install it, open it and pick your own Burnout Revenge disc image (PAL, see `SETUP.md`); an installed copy is updated by installing over it. The APK is signed by CI: if your installed app was signed with another key, Android will ask you to uninstall it first, and uninstalling deletes the game's files, so back up `Android/data/com.xerenge.burnout/files/` beforehand.
+          **Android only.** This release carries the Android APK, `Burnout_Revenge-android-arm64.apk` (arm64, a Vulkan 1.1 GPU - Adreno or Mali). Install it, open it and pick your own Burnout Revenge disc image (PAL, see `SETUP.md`); an installed copy is updated by installing over it. This release is signed with a permanent key, so from here on every release installs over the last one and keeps your saves and settings. Earlier builds were each signed with a throwaway key, so the first install over one of those needs an uninstall: back up `Android/data/com.xerenge.burnout/files/` (`user/` holds the saves) before you do, and put it back after.
 
           What is new since 0.4.5 (0.4.6 had the menu and the first two cheats):
           - **In-game menu.** A button at the top right of the screen opens a menu with Cheats, Edit layout and Restart the game.
           - **Cheats (Europe disc).** Tick cheats, then Save and restart; they are kept in `cheats.conf` and applied by the game every frame.
             - **Unlimited boost**: the meter stays full, using the game's own developer "Infinite Boost" switch.
             - **Unlock everything**: sets the flags behind the game's developer "Unlock All" option, to open cars, events and tracks. Races and stars still count and are saved (an early build lost them; fixed here).
-            - **Unlimited stars**: every finished event is recorded as a gold medal, which is what the stars add up.
+            - **Unlimited stars**: every event is marked done with all five stars each time the profile loads or a result is recorded, so the ranks open. It is written into the profile, so the stars stay once saved. (The first try only acted when a race finished and did not work.)
             - **Add a cheat**: your own memory patch, by address (hex), size and value.
             These two were found by reading the game's code, not by playing through with them, so treat them as experimental and report anything that stays locked or misbehaves. Keep them off while playing online.
           - **Edit layout.** Drag and resize every on-screen button, the stick and the menu button; Done keeps the layout in `touch_layout.conf`, and Reset puts it back.

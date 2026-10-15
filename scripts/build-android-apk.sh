@@ -37,6 +37,7 @@ echo "== resources and manifest ($(basename "$tools"), $(basename "$platform"))"
 "$tools/aapt2" link -o "$out/base.apk" -I "$android_jar" \
     --manifest "$app/AndroidManifest.xml" --java "$out/gen" \
     ${DEBUGGABLE:+--debug-mode} \
+    ${VERSION_CODE:+--version-code "$VERSION_CODE"} ${VERSION_NAME:+--version-name "$VERSION_NAME"} \
     --min-sdk-version $min_sdk --target-sdk-version $target_sdk "$out/res.zip"
 
 echo "== java"
