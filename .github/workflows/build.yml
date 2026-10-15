@@ -803,7 +803,7 @@ jobs:
         run: |
           ls -la artifacts
           cat > notes.md <<'NOTES'
-          **Android only.** This release carries the Android APK, `Burnout_Revenge-android-arm64.apk` (arm64, a Vulkan 1.1 GPU - Adreno or Mali). Install it, open it and pick your own Burnout Revenge disc image (PAL, see `SETUP.md`); an installed copy is updated by installing over it. This build is signed by CI with a key of its own, as earlier builds were, so it cannot install over one of them: uninstall the old app first, after backing up `Android/data/com.xerenge.burnout/files/` (`user/` holds the saves) and putting it back afterwards. The next release is meant to carry a permanent signing key, and from then on updates install over the last one and keep saves.
+          **Android only.** This release carries the Android APK, `Burnout_Revenge-android-arm64.apk` (arm64, a Vulkan 1.1 GPU - Adreno or Mali). Install it, open it and pick your own Burnout Revenge disc image (PAL, see `SETUP.md`); an installed copy is updated by installing over it. This release is signed with a permanent key, so from here on every release installs over the last one and keeps your saves and settings. Earlier builds were each signed with a throwaway key, so the first install over one of those needs an uninstall: back up `Android/data/com.xerenge.burnout/files/` (`user/` holds the saves) before you do, and put it back afterwards. The menu's Back up saves and Restore saves do the same through a zip.
 
           What is new since 0.4.5 (0.4.6 had the menu and the first two cheats):
           - **In-game menu.** A button at the top right of the screen opens a menu with Cheats, Edit layout and Restart the game.
