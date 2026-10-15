@@ -371,7 +371,7 @@ variables, Actions:
   -storepass android -keypass android -alias xerenge -keyalg RSA -keysize 2048
   -validity 10000 -dname "CN=Xerenge"`, then `base64 -w0 xerenge.keystore`).
   Every APK must be signed with this one key, or Android refuses to install a
-  build over the last (the release run refuses to build without it). Keep a
+  build over the last. Keep a
   copy of the keystore: if it is lost, the next build needs an uninstall.
 
 Run the Build workflow (Actions, Run workflow); the APK is the
