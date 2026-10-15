@@ -814,6 +814,7 @@ jobs:
             - **Add a cheat**: your own memory patch, by address (hex), size and value.
             These two were found by reading the game's code, not by playing through with them, so treat them as experimental and report anything that stays locked or misbehaves. Keep them off while playing online.
           - **Edit layout.** Drag and resize every on-screen button, the stick and the menu button; Done keeps the layout in `touch_layout.conf`, and Reset puts it back.
+          - **Back up saves / Restore saves** in the menu: the saves and settings (`user/`, `xerenge.conf`, `cheats.conf`, `touch_layout.conf`) go to a zip in a place you pick (Downloads, a cloud drive), which an uninstall does not reach, and come back from one. The extracted disc is not included.
           - **Back and Start** are drawn as the Xbox View and Menu glyphs instead of text.
           - **CI** can build and publish the Android APK alone (Run workflow, "Build only the Android APK"), and reads its build inputs from a repository set by the `ASSETS_REPO` variable, so a fork can build.
           NOTES

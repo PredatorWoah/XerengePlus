@@ -36,23 +36,22 @@ final class CheatsMenu {
 
     void show() {
         java.util.List<String> items = new java.util.ArrayList<>();
+        java.util.List<Runnable> actions = new java.util.ArrayList<>();
         items.add("Cheats");
+        actions.add(this::showCheats);
         if (host.canEditLayout()) {
             items.add("Edit layout");
+            actions.add(host::editLayout);
         }
+        items.add("Back up saves");
+        actions.add(() -> SaveBackup.backup(activity));
+        items.add("Restore saves");
+        actions.add(() -> SaveBackup.restore(activity));
         items.add("Restart the game");
-        final boolean layout = host.canEditLayout();
+        actions.add(() -> restart(activity));
         new AlertDialog.Builder(activity)
                 .setTitle("Menu")
-                .setItems(items.toArray(new String[0]), (d, which) -> {
-                    if (which == 0) {
-                        showCheats();
-                    } else if (layout && which == 1) {
-                        host.editLayout();
-                    } else {
-                        restart(activity);
-                    }
-                })
+                .setItems(items.toArray(new String[0]), (d, which) -> actions.get(which).run())
                 .setNegativeButton("Close", null)
                 .show();
     }
